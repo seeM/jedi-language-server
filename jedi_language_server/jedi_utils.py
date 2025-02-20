@@ -12,10 +12,9 @@ from inspect import Parameter
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import docstring_to_markdown
-import jedi.api.errors
-import jedi.inference.references
-import jedi.settings
+import jedi
 from jedi import Project, Script
+from jedi import settings as jedi_settings
 from jedi.api.classes import (
     BaseName,
     BaseSignature,
@@ -24,6 +23,7 @@ from jedi.api.classes import (
     ParamName,
     Signature,
 )
+from jedi.api.errors import SyntaxError as JediSyntaxError
 from lsprotocol.types import (
     CompletionItem,
     CompletionItemKind,
@@ -106,14 +106,14 @@ def set_jedi_settings(
     initialization_options: InitializationOptions,
 ) -> None:
     """Sets jedi settings."""
-    jedi.settings.auto_import_modules = list(
+    jedi_settings.auto_import_modules = list(
         set(
-            jedi.settings.auto_import_modules
+            jedi_settings.auto_import_modules
             + initialization_options.jedi_settings.auto_import_modules
         )
     )
 
-    jedi.settings.case_insensitive_completion = (
+    jedi_settings.case_insensitive_completion = (
         initialization_options.jedi_settings.case_insensitive_completion
     )
     if initialization_options.jedi_settings.debug:
@@ -284,7 +284,7 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
     return results
 
 
-def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
+def lsp_diagnostic(error: JediSyntaxError) -> Diagnostic:
     """Get LSP Diagnostic from Jedi SyntaxError."""
     return Diagnostic(
         range=Range(
